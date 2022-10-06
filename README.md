@@ -6,4 +6,3 @@
 - [x] GoogLeNet
 - [x] ResNet
 - [x] VggNet
-- [ ] ZFNet

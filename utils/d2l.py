@@ -1,6 +1,13 @@
 from d2l import torch as d2l
 import torch
 import torch.nn as nn
+import os
+import sys 
+import shutil
+import pandas as pd
+import torchvision
+import collections
+import math
 
 def evaluate_accuracy_gpu(net, data_iter, device=None):
     if isinstance(net, torch.nn.Module):
@@ -49,3 +56,53 @@ def train_ch6(net, train_iter, test_iter, num_epochs, lr, device):
         animator.add(epoch + 1, (None, None, test_acc))
     print(f'loss {train_l:.3f}, train acc {train_acc:.3f}, test acc {test_acc:.3f}')
     print(f'{metric[2] * num_epochs / timer.sum():.1f} examples/sec on {str(device)}')
+    
+    
+    
+def read_csv_labels(fname):
+    """返回文件名映射到标签的字典
+    Args:
+        fname (_type_): 从 fname 中读取文件名和标签
+    """
+    with open(fname, 'r') as f:
+        lines = f.readlines()[1:]
+    tokens = [l.rstrip().split(',') for l in lines]
+    return dict((name, label) for name, label in tokens)
+
+
+def copyfile(filename, targe_dir):
+    """将文件复制到目标文件夹
+    Args:
+        filename (_type_): _description_
+        targe_dir (_type_): _description_
+    """
+    os.makedirs(targe_dir, exist_ok=True)
+    shutil.copy(filename, targe_dir)
+    
+    
+def reorg_train_valid(data_dir, labels, valid_ratio):
+    """将验证集从原始的训练集中拆分
+    Args:
+        data_dir (_type_): _description_
+        labels (_type_): _description_
+        valid_ratio (_type_): _description_
+    """
+    n = collections.Counter(labels.values()).most_common()[-1][1]
+    n_valid_per_label = max(1, math.floor(n * valid_ratio))
+    label_count = {}
+    for train_file in os.listdir(os.path.join(data_dir, 'train')):
+        label = labels[train_file.split('.')[0]]
+        fname = os.path.join(data_dir, 'train', train_file)
+        copyfile(fname, os.path.join(data_dir, 'train_valid_test', 'train_valid', label))
+        if label not in label_count or label_count[label] < n_valid_per_label:
+            copyfile(fname, os.path.join(data_dir, 'train_valid_test', 'valid', label))
+            label_count[label] = label_count.get(label, 0) + 1
+        else:
+            copyfile(fname, os.path.join(data_dir, 'train_valid_test', 'train', label))
+    return n_valid_per_label
+
+def reorg_test(data_dir):
+    for test_file in os.listdir(os.path.join(data_dir, 'test')):
+        copyfile(os.path.join(data_dir, 'test', test_file), os.path.join(data_dir, 'train_valid_test', 'test', 'unknow'))
+    
+    
