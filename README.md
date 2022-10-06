@@ -4,6 +4,6 @@
 - [x] LeNet
 - [x] AlexNet
 - [x] GoogLeNet
-- [ ] ResNet
-- [ ] VggNet
+- [x] ResNet
+- [x] VggNet
 - [ ] ZFNet

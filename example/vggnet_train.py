@@ -17,10 +17,10 @@ net = VGGNet(conv_arch, 1, 10)
 
 summary(net, input_size=[(1, 224, 224)], batch_size=1, device='cpu')
 
-batch_size = 128
+batch_size = 8
 train_iter, test_iter = d2l.load_data_fashion_mnist(batch_size=batch_size, resize=224)
 
 lr, num_epochs = 0.05, 10
-train_ch6(net, train_iter, test_iter, num_epochs, lr, 'cpu')
+train_ch6(net, train_iter, test_iter, num_epochs, lr, d2l.try_gpu())
 
 d2l.plt.show()
